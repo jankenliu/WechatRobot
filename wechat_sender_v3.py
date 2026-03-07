@@ -43,7 +43,7 @@ class WeChatSenderV3(MessageSenderInterface):
         
         # 默认配置
         self.process_names = ["WeChat.exe", "Weixin.exe", "wechat.exe"]
-        self.default_group = config.get('default_group', '存储统计报告群') if config else '存储统计报告群'
+        self.default_group = config.get('default_group', '文件传输助手') if config else '存储统计报告群'
         
     def initialize(self) -> bool:
         """初始化个人微信发送器"""
@@ -175,7 +175,7 @@ class WeChatSenderV3(MessageSenderInterface):
     def search_group(self, group_name: str) -> bool:
         """搜索并进入个人微信群聊"""
         try:
-            logger.info(f"搜索个人微信群聊: {group_name}")
+            logger.info(f"搜索个人微信群聊(ctrl+f): {group_name}")
             
             # 激活微信窗口
             if not self.activate_application():
@@ -187,9 +187,12 @@ class WeChatSenderV3(MessageSenderInterface):
             time.sleep(1)
             
             # 输入群名搜索
+            # 将群名称复制到剪贴板，用于后续粘贴到微信搜索框
             pyperclip.copy(group_name)
+            # 全选搜索框中的原有内容（Ctrl+A），确保后续的粘贴可以全部覆盖搜索框
             pyautogui.hotkey('ctrl', 'a')
             time.sleep(0.2)
+            # 粘贴剪贴板中的群名称到搜索框（Ctrl+V）
             pyautogui.hotkey('ctrl', 'v')
             time.sleep(1)
             
