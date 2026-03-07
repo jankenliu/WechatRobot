@@ -7,13 +7,4 @@ Content-Type: application/json
   "content": "Hello, World!"
 }
 
-### 发送到另一个联系人
-POST http://localhost:9999/wxSend
-Content-Type: application/json
-
-{
-  "target": "张三",
-  "content": "下午好！"
-}
-
 
