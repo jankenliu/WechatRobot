@@ -7,4 +7,5 @@ Content-Type: application/json
   "content": "Hello, World!"
 }
 
-
+### 测试微信窗口状态
+GET http://localhost:9999/test

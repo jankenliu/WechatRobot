@@ -32,6 +32,12 @@ curl -X POST http://localhost:9999/wxSend \
   -H "Content-Type: application/json" \
   -d '{"target":"文件传输助手","content":"你好"}'
 ```
+
+**自定义端口启动：**
+```bash
+# 自定义端口
+uv run start_server.py 8080
+```
 ---
 
 ### 方式二：命令行方式
@@ -57,6 +63,84 @@ uv run wechat_sender_v3.py send 张三 今天天气真好
 ```
 
 📖 **更多说明：** 见下方详细说明
+
+---
+
+## 📝 API 接口说明
+
+### 1. 发送消息接口
+
+**端点：** `POST /wxSend`
+
+**请求体：**
+```json
+{
+  "target": "聊天对象名称",
+  "content": "消息内容"
+}
+```
+
+**示例：**
+```bash
+curl -X POST http://localhost:9999/wxSend \
+  -H "Content-Type: application/json" \
+  -d '{"target":"文件传输助手","content":"你好"}'
+```
+
+**响应：**
+```json
+{
+  "status": "success",
+  "message": "成功"
+}
+```
+
+---
+
+### 2. 测试微信状态接口 ⭐ NEW
+
+**端点：** `GET /test`
+
+**说明：** 测试微信进程、窗口查找和激活功能（相当于命令行 `uv run wechat_sender_v3.py test`）
+
+**示例：**
+```bash
+curl http://localhost:9999/test
+```
+
+**响应：**
+```json
+{
+  "service": "WeChat Test API",
+  "version": "1.0.0",
+  "overall_status": "success",
+  "tests": [
+    {
+      "name": "微信进程查找",
+      "status": "success",
+      "message": "✅ 个人微信进程查找成功",
+      "pid": 12345
+    },
+    {
+      "name": "微信窗口查找",
+      "status": "success",
+      "message": "✅ 个人微信窗口查找成功",
+      "window_hwnd": 65536,
+      "window_title": "微信"
+    },
+    {
+      "name": "微信窗口激活",
+      "status": "success",
+      "message": "✅ 窗口激活成功"
+    }
+  ]
+}
+```
+
+**测试项说明：**
+- **微信进程查找** - 验证微信进程是否正常运行
+- **微信窗口查找** - 验证能否找到微信窗口句柄
+- **微信窗口激活** - 验证能否激活微信窗口到前台
 
 ---
 

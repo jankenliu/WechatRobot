@@ -164,7 +164,7 @@ class WeChatSenderV3(MessageSenderInterface):
 
             # 激活窗口
             win32gui.SetForegroundWindow(self.main_window_hwnd)
-            time.sleep(1)
+            time.sleep(0.1)
 
             logger.info("个人微信窗口已激活")
             return True
@@ -183,23 +183,29 @@ class WeChatSenderV3(MessageSenderInterface):
                 return False
 
             # 使用快捷键打开搜索（Ctrl+F）
-            time.sleep(0.5)
             pyautogui.hotkey('ctrl', 'f')
-            time.sleep(1)
+            time.sleep(0.3)
+            pyautogui.hotkey('ctrl', 'f')
 
             # 输入群名搜索
             # 将群名称复制到剪贴板，用于后续粘贴到微信搜索框
             pyperclip.copy(group_name)
             # 全选搜索框中的原有内容（Ctrl+A），确保后续的粘贴可以全部覆盖搜索框
             pyautogui.hotkey('ctrl', 'a')
-            time.sleep(0.2)
+            time.sleep(0.1)
             # 粘贴剪贴板中的群名称到搜索框（Ctrl+V）
             pyautogui.hotkey('ctrl', 'v')
-            time.sleep(1)
+            time.sleep(0.5)
 
             # 按回车选择第一个结果，进入对应的聊天对象窗口
             pyautogui.press('enter')
-            time.sleep(2)
+            time.sleep(0.2)
+
+            # 退到桌面
+            pyautogui.hotkey('win', 'd')
+            time.sleep(0.1)
+            # 再执行下，又退到微信，以便于激活输入框光标
+            pyautogui.hotkey('win', 'd')
 
             logger.info(f"已搜索并进入个人微信群聊: {group_name}")
             return True
@@ -274,6 +280,8 @@ class WeChatSenderV3(MessageSenderInterface):
             bool: 发送是否成功
         """
         try:
+            # 退到桌面
+            pyautogui.hotkey('win', 'd')
             logger.info(f"开始发送文本消息到个人微信：{target_group}")
 
             # 初始化发送器
@@ -374,6 +382,8 @@ def main():
                 print(f"❌ 消息发送失败！目标：{target_name}")
 
         elif command == "debug":
+            # 退到桌面
+            pyautogui.hotkey('win', 'd')
             # 获取调试信息
             sender.initialize()
             debug_info = sender.get_debug_info()
@@ -381,24 +391,7 @@ def main():
             print(json.dumps(debug_info, ensure_ascii=False, indent=2))
 
         elif command == "test":
-            # 测试功能
-            print("测试个人微信进程查找...")
-            if sender.find_target_process():
-                print("✅ 个人微信进程查找成功")
-
-                print("测试个人微信窗口查找...")
-                if sender._find_wechat_windows():
-                    print("✅ 个人微信窗口查找成功")
-
-                    print("测试窗口激活...")
-                    if sender.activate_application():
-                        print("✅ 窗口激活成功")
-                    else:
-                        print("❌ 窗口激活失败")
-                else:
-                    print("❌ 个人微信窗口查找失败")
-            else:
-                print("❌ 个人微信进程查找失败")
+            test(sender)
 
         else:
             print("未知命令。可用命令：")
@@ -411,6 +404,29 @@ def main():
         print("  uv run wechat_sender_v3.py send [聊天对象名] [聊天文本内容] - 发送文本消息")
         print("  uv run wechat_sender_v3.py debug - 获取调试信息")
         print("  uv run wechat_sender_v3.py test - 测试功能")
+
+
+def test(sender: WeChatSenderV3):
+    # 退到桌面
+    pyautogui.hotkey('win', 'd')
+    # 测试功能
+    print("测试个人微信进程查找...")
+    if sender.find_target_process():
+        print("✅ 个人微信进程查找成功")
+
+        print("测试个人微信窗口查找...")
+        if sender._find_wechat_windows():
+            print("✅ 个人微信窗口查找成功")
+
+            print("测试窗口激活...")
+            if sender.activate_application():
+                print("✅ 窗口激活成功")
+            else:
+                print("❌ 窗口激活失败")
+        else:
+            print("❌ 个人微信窗口查找失败")
+    else:
+        print("❌ 个人微信进程查找失败")
 
 
 if __name__ == "__main__":

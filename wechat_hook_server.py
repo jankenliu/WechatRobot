@@ -13,6 +13,9 @@ from urllib.parse import urlparse, parse_qs
 from typing import Dict, Any
 import threading
 
+import pyautogui
+import win32gui
+
 from wechat_sender_v3 import WeChatSenderV3
 
 # 配置日志
@@ -102,7 +105,7 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                 return
             
             logger.info(f"收到发送请求：目标={chat_target}, 消息长度={len(message_content)}")
-            
+
             # 发送微信消息
             sender = self._get_sender()
             success = sender.send_text(message_content, chat_target)
@@ -111,9 +114,7 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                 logger.info(f"消息发送成功：{chat_target}")
                 self._send_success_response({
                     "status": "success",
-                    "message": "消息发送成功",
-                    "target": chat_target,
-                    "content_length": len(message_content)
+                    "message": "消息发送成功"
                 })
             else:
                 logger.error(f"消息发送失败：{chat_target}")
@@ -128,29 +129,105 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
             self._send_error_response("服务器内部错误", str(e), status_code=500)
     
     def do_GET(self):
-        """处理 GET 请求（用于健康检查）"""
+        """处理 GET 请求（用于测试）"""
         try:
             parsed_path = urlparse(self.path)
             
-            # 只保留根路径的健康检查
-            if parsed_path.path == '/':
-                self.send_response(200)
+            # /test 路径：测试微信窗口状态
+            if parsed_path.path.strip('/') == 'test':
+                logger.info("收到测试请求")
+
+                # 退到桌面
+                pyautogui.hotkey('win', 'd')
+                
+                # 创建发送器实例并执行测试
+                sender = self._get_sender()
+                
+                result = {
+                    "service": "WeChat Test API",
+                    "version": "1.0.0",
+                    "tests": []
+                }
+                
+                # 测试 1：查找微信进程
+                try:
+                    if sender.find_target_process():
+                        result["tests"].append({
+                            "name": "微信进程查找",
+                            "status": "success",
+                            "message": "✅ 个人微信进程查找成功",
+                            "pid": sender.wechat_pid
+                        })
+                    else:
+                        result["tests"].append({
+                            "name": "微信进程查找",
+                            "status": "failed",
+                            "message": "❌ 个人微信进程查找失败"
+                        })
+                except Exception as e:
+                    result["tests"].append({
+                        "name": "微信进程查找",
+                        "status": "error",
+                        "message": f"❌ 个人微信进程查找异常：{e}"
+                    })
+                
+                # 测试 2：查找微信窗口
+                try:
+                    if sender._find_wechat_windows():
+                        result["tests"].append({
+                            "name": "微信窗口查找",
+                            "status": "success",
+                            "message": "✅ 个人微信窗口查找成功",
+                            "window_hwnd": sender.main_window_hwnd,
+                            "window_title": win32gui.GetWindowText(sender.main_window_hwnd) if sender.main_window_hwnd and win32gui.IsWindow(sender.main_window_hwnd) else None
+                        })
+                    else:
+                        result["tests"].append({
+                            "name": "微信窗口查找",
+                            "status": "failed",
+                            "message": "❌ 个人微信窗口查找失败"
+                        })
+                except Exception as e:
+                    result["tests"].append({
+                        "name": "微信窗口查找",
+                        "status": "error",
+                        "message": f"❌ 个人微信窗口查找异常：{e}"
+                    })
+                
+                # 测试 3：激活窗口
+                try:
+                    if sender.activate_application():
+                        result["tests"].append({
+                            "name": "微信窗口激活",
+                            "status": "success",
+                            "message": "✅ 窗口激活成功"
+                        })
+                    else:
+                        result["tests"].append({
+                            "name": "微信窗口激活",
+                            "status": "failed",
+                            "message": "❌ 窗口激活失败"
+                        })
+                except Exception as e:
+                    result["tests"].append({
+                        "name": "微信窗口激活",
+                        "status": "error",
+                        "message": f"❌ 窗口激活异常：{e}"
+                    })
+                
+                # 清理资源
+                sender.cleanup()
+                
+                # 判断总体状态
+                all_success = all(test["status"] == "success" for test in result["tests"])
+                result["overall_status"] = "success" if all_success else "failed"
+                
+                self.send_response(200 if all_success else 500)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self._send_cors_headers()
                 self.end_headers()
                 
-                response = {
-                    "service": "WeChat Hook API",
-                    "version": "1.0.0",
-                    "endpoint": "POST /wxSend",
-                    "example": {
-                        "url": "http://localhost:9999/wxSend",
-                        "body": {
-                            "target": "文件传输助手",
-                            "content": "Hello, World!"
-                        }
-                    }
-                }
-                self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+                self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
                 return
             
             # 其他路径返回 404
@@ -168,7 +245,6 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
         self.end_headers()
         
         response = {
-            "code": 0,
             **data
         }
         self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
@@ -193,14 +269,14 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
 def run_server(host: str = 'localhost', port: int = 9999):
     """运行 HTTP 服务器"""
     server_address = (host, port)
-    httpd = HTTPServer(server_address, WeChatHookHandler)
-    
     logger.info(f"正在启动微信 Hook HTTP 服务器...")
-    logger.info(f"监听地址：http://{host}:{port}")
-    logger.info(f"API 端点：POST /wxSend")
-    logger.info(f"请求体：{{\"target\": \"聊天对象名\", \"content\": \"消息内容\"}}")
-    logger.info(f"按 Ctrl+C 停止服务")
-    
+    httpd = HTTPServer(server_address, WeChatHookHandler)
+
+    logger.info("服务启动成功")
+    print()
+    print("=" * 60)
+    print()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -214,7 +290,7 @@ def main():
     import sys
     
     # 默认配置
-    default_host = 'localhost'
+    default_host = '0.0.0.0'  # 绑定所有网络接口，支持本地和局域网访问
     default_port = 9999
     
     # 解析命令行参数

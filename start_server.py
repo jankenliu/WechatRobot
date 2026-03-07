@@ -14,7 +14,7 @@ def main():
     
     # 默认配置
     default_port = 9999
-    default_host = "localhost"
+    default_host = "0.0.0.0"  # 绑定所有网络接口，支持本地和局域网访问
     
     # 解析命令行参数
     port = default_port
@@ -31,16 +31,11 @@ def main():
         host = sys.argv[2]
     
     print(f"📡 监听地址：http://{host}:{port}")
-    print(f"📍 API 端点：POST /wxSend")
-    print(f"📋 请求体：{{\"target\": \"聊天对象名\", \"content\": \"消息内容\"}}")
-    print("=" * 60)
-    print()
-    print("使用示例:")
-    print(f"  curl -X POST http://{host}:{port}/wxSend \\")
-    print(f"    -H \"Content-Type: application/json\" \\")
-    print(f"    -d '{{\"target\":\"文件传输助手\",\"content\":\"你好\"}}'")
-    print()
-    print("按 Ctrl+C 停止服务")
+    print(f"🌐 可访问地址:")
+    print(f"   - 本地访问：http://localhost:{port}")
+    print(f"   - 局域网访问：http://<本机 IP>:{port} (如：http://192.168.1.111:{port})")
+    print(f"🔍 测试接口：GET /test")
+    print(f"📍 发送微信消息接口：POST /wxSend {{\"target\": \"聊天对象名\", \"content\": \"消息内容\"}}")
     print("=" * 60)
     print()
     
