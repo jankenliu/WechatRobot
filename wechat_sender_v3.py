@@ -38,6 +38,7 @@ class WeChatSenderV3(MessageSenderInterface):
         # 微信进程和窗口信息
         self.wechat_process = None
         self.wechat_pid = None
+        self.wechat_pids = []
         self.main_window_hwnd = None
         
         # 默认配置
@@ -86,6 +87,7 @@ class WeChatSenderV3(MessageSenderInterface):
             # 选择第一个微信进程
             self.wechat_process = wechat_processes[0]
             self.wechat_pid = self.wechat_process.pid
+            self.wechat_pids = [proc.pid for proc in wechat_processes]
             logger.info(f"找到个人微信进程 PID: {self.wechat_pid}")
             return True
             
@@ -105,7 +107,7 @@ class WeChatSenderV3(MessageSenderInterface):
             win32gui.EnumWindows(self._enum_windows_callback, windows_list)
             
             # 查找属于微信进程的窗口
-            wechat_windows = [w for w in windows_list if w['pid'] == self.wechat_pid]
+            wechat_windows = [w for w in windows_list if w['pid'] in self.wechat_pids]
             
             if not wechat_windows:
                 logger.error("未找到个人微信窗口")
