@@ -1,0 +1,19 @@
+### 向指定聊天对象发送消息
+POST http://localhost:9999/wxSend
+Content-Type: application/json
+
+{
+  "target": "文件传输助手",
+  "content": "Hello, World!"
+}
+
+### 发送到另一个联系人
+POST http://localhost:9999/wxSend
+Content-Type: application/json
+
+{
+  "target": "张三",
+  "content": "下午好！"
+}
+
+

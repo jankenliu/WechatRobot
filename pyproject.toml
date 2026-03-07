@@ -1,10 +1,11 @@
 [project]
 name = "wechatrobot"
 version = "0.1.0"
-description = "Add your description here"
+description = "微信消息自动化工具，支持命令行和 HTTP API 方式"
 requires-python = ">=3.14"
 dependencies = [
     "psutil>=7.2.2",
     "pyautogui>=0.9.54",
     "pywin32>=311",
+    "pyperclip>=1.8.2",
 ]
