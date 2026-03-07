@@ -1,0 +1,10 @@
+[project]
+name = "wechatrobot"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "psutil>=7.2.2",
+    "pyautogui>=0.9.54",
+    "pywin32>=311",
+]
