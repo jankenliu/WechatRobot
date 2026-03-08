@@ -30,8 +30,6 @@ def main():
         host = sys.argv[2]
     
     print(f"📡 监听地址：http://{host}:{port}")
-    print(f"🌐 可访问地址:")
-    print(f"   - 本地访问：http://localhost:{port}")
     print(f"🔍 测试接口：GET /test")
     print(f"📍 发送微信消息接口：POST /wxSend {{\"target\": \"聊天对象名\", \"content\": \"消息内容\"}}")
     print("=" * 60)
