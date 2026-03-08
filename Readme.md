@@ -33,6 +33,10 @@
 uv run start_server.py
 ```
 
+**或下发行版直接运行exe的服务：**
+- [下载地址](https://gitee.com/jankinliu/WechatRobot/releases/)
+
+
 **发送消息：**
 ```bash
 curl -X POST http://localhost:9999/wxSend \
