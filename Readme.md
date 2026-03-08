@@ -34,8 +34,11 @@ uv run start_server.py
 ```
 
 **或下发行版直接运行exe的服务：**
-- [下载地址](https://gitee.com/jankinliu/WechatRobot/releases/)
+- [Gitee下载地址](https://gitee.com/jankinliu/WechatRobot/releases/)
+- [GitHub下载地址](https://github.com/jankenliu/WechatRobot/releases/)
 
+**启动程序图片演示**
+![robot.png](robot.png)
 
 **发送消息：**
 ```bash
