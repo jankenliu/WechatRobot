@@ -124,6 +124,8 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                     "微信消息发送失败，请检查微信是否正常运行",
                     status_code=500
                 )
+            sleep(0.1)
+            print("=" * 60)
         
         except Exception as e:
             logger.error(f"处理请求失败：{e}", exc_info=True)
@@ -218,6 +220,8 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                 
                 # 清理资源
                 sender.cleanup()
+                sleep(0.1)
+                print("=" * 60)
                 
                 # 判断总体状态
                 all_success = all(test["status"] == "success" for test in result["tests"])

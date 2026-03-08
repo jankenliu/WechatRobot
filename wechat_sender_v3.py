@@ -263,8 +263,6 @@ class WeChatSenderV3(MessageSenderInterface):
             self.wechat_pid = None
             self.main_window_hwnd = None
             self.is_initialized = False
-            sleep(0.1)
-            print("=" * 60)
             return True
         except Exception as e:
             logger.error(f"清理资源失败: {e}")
@@ -381,6 +379,8 @@ def main():
                 print(f"✅ 消息发送成功！目标：{target_name}")
             else:
                 print(f"❌ 消息发送失败！目标：{target_name}")
+            sleep(0.1)
+            print("=" * 60)
 
         elif command == "debug":
             # 退到桌面
