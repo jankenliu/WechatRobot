@@ -1,4 +1,4 @@
-# WechatRobot - 微信消息自动化工具
+# WechatRobot - 微信消息自动化Hook工具
 
 > 🤖 支持命令行和 HTTP API 两种方式发送微信消息
 
@@ -17,7 +17,7 @@
 - 📱 远程消息发送
 - 🔗 与其他系统集成
 
-## 🎯 两种方式
+## 🚀 两种方式
 
 ### 方式一：HTTP API（推荐）⭐
 
@@ -70,16 +70,6 @@ uv run wechat_sender_v3.py send 张三 今天天气真好
 
 ### 1. 发送消息接口
 
-**端点：** `POST /wxSend`
-
-**请求体：**
-```json
-{
-  "target": "聊天对象名称",
-  "content": "消息内容"
-}
-```
-
 **示例：**
 ```bash
 curl -X POST http://localhost:9999/wxSend \
@@ -87,21 +77,9 @@ curl -X POST http://localhost:9999/wxSend \
   -d '{"target":"文件传输助手","content":"你好"}'
 ```
 
-**响应：**
-```json
-{
-  "status": "success",
-  "message": "成功"
-}
-```
-
 ---
 
-### 2. 测试微信状态接口 ⭐ NEW
-
-**端点：** `GET /test`
-
-**说明：** 测试微信进程、窗口查找和激活功能（相当于命令行 `uv run wechat_sender_v3.py test`）
+### 2. 测试微信状态接口
 
 **示例：**
 ```bash
@@ -153,7 +131,7 @@ curl http://localhost:9999/test
 6. 将待发送的文本存进剪贴板，Ctrl+A 全选输入框内容，Ctrl+V 粘贴 [待发送内容]
 7. Enter 回车发送消息
 
-# 注意事项
+# ⚠️注意事项
 - 确保微信已登录且处于正常运行状态
 - 聊天对象名称必须与微信中的名称完全匹配
 - 如果存在多个同名聊天对象，会选择第一个匹配的结果。
@@ -172,3 +150,11 @@ WechatRobot/
 ├── test.http                # HTTP 请求测试文件
 └── Readme.md                # 主文档
 ```
+
+# 🤝特别鸣谢
+- [wxbot-automation](https://github.com/jxyk2007/wxbot-automation) - 微信自动化工具，感谢作者提供的思想
+- [Python](https://www.python.org/) - 跨平台的 Python 解释器
+- [uv](https://github.com/astral-sh/uv) - 高性能的Python项目管理器
+- [pyautogui](https://github.com/asweigart/pyautogui) - 跨平台的 GUI 自动化库
+- [pywin32](https://github.com/mhammond/pywin32) - Windows API 访问库
+- [psutil](https://github.com/giampaolo/psutil) - 系统进程管理库
