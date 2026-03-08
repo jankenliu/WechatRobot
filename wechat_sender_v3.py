@@ -6,20 +6,19 @@
 功能：基于通用接口的个人微信自动发送功能（WeChat.exe/Weixin.exe）
 """
 
-import os
+import logging
 import time
-import win32gui
-import win32con
-import win32api
-import win32process
+from time import sleep
+from typing import Dict, Any
+
 import psutil
 import pyautogui
 import pyperclip
-import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
+import win32con
+import win32gui
+import win32process
 
-from message_sender_interface import MessageSenderInterface, MessageSenderFactory, SendResult
+from message_sender_interface import MessageSenderInterface, MessageSenderFactory
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -264,6 +263,8 @@ class WeChatSenderV3(MessageSenderInterface):
             self.wechat_pid = None
             self.main_window_hwnd = None
             self.is_initialized = False
+            sleep(0.1)
+            print("=" * 60)
             return True
         except Exception as e:
             logger.error(f"清理资源失败: {e}")
@@ -427,6 +428,7 @@ def test(sender: WeChatSenderV3):
             print("❌ 个人微信窗口查找失败")
     else:
         print("❌ 个人微信进程查找失败")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@
 import json
 import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from time import sleep
 from urllib.parse import urlparse, parse_qs
 from typing import Dict, Any
 import threading
@@ -34,9 +35,9 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
     _sender_lock = threading.Lock()
     
     def log_message(self, format, *args):
-        """重写日志方法，使用我们的日志系统"""
-        logger.info(f"HTTP 请求：{args[0]}")
-    
+        """重写日志记录方法，不记录请求日志"""
+        pass
+
     def _get_sender(self) -> WeChatSenderV3:
         """获取或创建微信发送器实例"""
         if WeChatHookHandler._sender is None:
@@ -273,6 +274,7 @@ def run_server(host: str = 'localhost', port: int = 9999):
     httpd = HTTPServer(server_address, WeChatHookHandler)
 
     logger.info("服务启动成功")
+    sleep(0.1)
     print()
     print("=" * 60)
     print()

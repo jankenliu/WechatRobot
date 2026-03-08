@@ -4,7 +4,6 @@
 """
 
 import sys
-import os
 
 def main():
     """主函数"""
@@ -33,7 +32,6 @@ def main():
     print(f"📡 监听地址：http://{host}:{port}")
     print(f"🌐 可访问地址:")
     print(f"   - 本地访问：http://localhost:{port}")
-    print(f"   - 局域网访问：http://<本机 IP>:{port} (如：http://192.168.1.111:{port})")
     print(f"🔍 测试接口：GET /test")
     print(f"📍 发送微信消息接口：POST /wxSend {{\"target\": \"聊天对象名\", \"content\": \"消息内容\"}}")
     print("=" * 60)
