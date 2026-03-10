@@ -83,7 +83,7 @@ uv run wechat_sender_v3.py send 张三 今天天气真好
 ## 📝 API 接口说明
 
 ### 1. 发送消息接口
-
+ **！！！请务必首先手动的 ctrl+f 输入每一个需要自动化的完整的 [聊天对象名] 先将搜索进行缓存，以便于程序执行 ctrl+f 搜索 [聊天对象名] 时，搜索结果第一个就是目标聊天对象** 
 **示例：**
 ```bash
 curl -X POST http://localhost:9999/wxSend \
