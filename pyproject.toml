@@ -8,6 +8,8 @@ dependencies = [
     "pyautogui>=0.9.54",
     "pywin32>=311",
     "pyperclip>=1.8.2",
+    "requests>=2.31.0",
+    "Pillow>=10.0.0",
 ]
 
 [dependency-groups]
