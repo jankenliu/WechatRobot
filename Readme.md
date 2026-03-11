@@ -43,11 +43,25 @@ uv run start_server.py
  **！！！请务必首先手动的在PC微信当中 ctrl+f 输入每一个需要自动化的完整的 [聊天对象名：如文件传输助手] 先将搜索进行缓存，以便于程序执行 ctrl+f 搜索 [聊天对象名] 时，搜索结果第一个就是目标聊天对象** 
 
 
-**发送消息：**
+**发送文字消息：**
 ```bash
 curl -X POST http://localhost:9999/wxSend \
   -H "Content-Type: application/json" \
   -d '{"target":"文件传输助手","content":"你好"}'
+```
+
+**发送文件消息(本地文件路径)：**
+```bash
+curl -X POST http://localhost:9999/wxSend \
+  -H "Content-Type: application/json" \
+  -d '{"target":"文件传输助手","file":"C:\\图片\\xxx.png"}'
+```
+
+**发送文件消息(网络文件路径)：**
+```bash
+curl -X POST http://localhost:9999/wxSend \
+  -H "Content-Type: application/json" \
+  -d '{"target":"文件传输助手","file":"https://xxx.png"}'
 ```
 
 **自定义端口启动：**

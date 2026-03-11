@@ -8,6 +8,7 @@
 
 import json
 import logging
+import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from time import sleep
 from urllib.parse import urlparse, parse_qs
@@ -18,6 +19,8 @@ import pyautogui
 import win32gui
 
 from wechat_sender_v3 import WeChatSenderV3
+from file_down import download_file
+from file_copy import copy_file_to_clipboard
 
 # 配置日志
 logging.basicConfig(
@@ -89,26 +92,79 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                 self._send_error_response("缺少必需字段", "请求体必须包含'target'字段（聊天对象名）")
                 return
             
-            if 'content' not in data:
-                self._send_error_response("缺少必需字段", "请求体必须包含'content'字段（消息内容）")
-                return
-            
             chat_target = data['target']
-            message_content = data['content']
             
-            # 验证参数
+            # 验证聊天对象名
             if not chat_target or not isinstance(chat_target, str):
                 self._send_error_response("无效的聊天对象名", "target 必须是非空字符串")
                 return
             
-            if not message_content or not isinstance(message_content, str):
-                self._send_error_response("无效的消息内容", "content 必须是非空字符串")
+            # 获取 content 和 file 字段
+            message_content = data.get('content')
+            file_path = data.get('file')
+            
+            # 验证 content 和 file 只能有一个有值
+            has_content = message_content is not None and message_content != ''
+            has_file = file_path is not None and file_path != ''
+            
+            if not has_content and not has_file:
+                self._send_error_response("缺少消息内容", "请求体必须包含'content'字段（消息内容）或'file'字段（文件路径）")
+                return
+            
+            if has_content and has_file:
+                self._send_error_response("参数冲突", "'content'和'file'字段不能同时有值，请只使用其中一个")
+                return
+            
+            sender = self._get_sender()
+            
+            # 处理文件发送
+            if has_file:
+                # 判断是否为远程文件
+                if file_path.startswith('http://') or file_path.startswith('https://'):
+                    logger.info(f"检测到远程文件，开始下载：{file_path}")
+                    try:
+                        local_file_path = download_file(file_path)
+                        logger.info(f"文件下载成功：{local_file_path}")
+                    except Exception as e:
+                        self._send_error_response("文件下载失败", str(e), status_code=500)
+                        return
+                else:
+                    # 本地文件，验证文件是否存在
+                    if not os.path.exists(file_path):
+                        self._send_error_response("文件不存在", f"本地文件不存在：{file_path}")
+                        return
+                    local_file_path = file_path
+                
+                logger.info(f"收到文件发送请求：目标={chat_target}, 文件={local_file_path}")
+                
+                # 发送文件
+                success = sender.send_file(local_file_path, chat_target)
+                
+                if success:
+                    logger.info(f"文件发送成功：{chat_target}")
+                    self._send_success_response({
+                        "status": "success",
+                        "message": "文件发送成功"
+                    })
+                else:
+                    logger.error(f"文件发送失败：{chat_target}")
+                    self._send_error_response(
+                        "文件发送失败",
+                        "微信文件发送失败，请检查微信是否正常运行",
+                        status_code=500
+                    )
+                sleep(0.1)
+                print("=" * 60)
+                return
+            
+            # 处理文本消息发送
+            if not isinstance(message_content, str):
+                self._send_error_response("无效的消息内容", "content 必须是字符串")
                 return
             
             logger.info(f"收到发送请求：目标={chat_target}, 消息长度={len(message_content)}")
 
             # 发送微信消息
-            sender = self._get_sender()
             success = sender.send_text(message_content, chat_target)
             
             if success:

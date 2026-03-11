@@ -1,10 +1,28 @@
-### 向指定聊天对象发送消息
+### 向指定聊天对象发送文本消息
 POST http://localhost:9999/wxSend
 Content-Type: application/json
 
 {
   "target": "文件传输助手",
   "content": "Hello, World!"
+}
+
+### 向指定聊天对象发送远程文件（http/https）
+POST http://localhost:9999/wxSend
+Content-Type: application/json
+
+{
+  "target": "文件传输助手",
+  "file": "https://example.com/file.pdf"
+}
+
+### 向指定聊天对象发送本地文件
+POST http://localhost:9999/wxSend
+Content-Type: application/json
+
+{
+  "target": "文件传输助手",
+  "file": "C:\\Users\\User\\Documents\\test.txt"
 }
 
 ### 测试微信窗口状态

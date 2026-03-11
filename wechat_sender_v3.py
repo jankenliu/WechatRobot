@@ -302,6 +302,57 @@ class WeChatSenderV3(MessageSenderInterface):
         finally:
             self.cleanup()
 
+    def send_file(self, file_path: str, target_group: str) -> bool:
+        """发送文件到指定的个人微信聊天对象
+        
+        Args:
+            file_path: 本地文件的绝对路径
+            target_group: 目标聊天对象名称
+            
+        Returns:
+            bool: 发送是否成功
+        """
+        try:
+            # 退到桌面
+            pyautogui.hotkey('win', 'd')
+            logger.info(f"开始发送文件到个人微信：{target_group}")
+
+            # 初始化发送器
+            if not self.initialize():
+                logger.error("初始化个人微信发送器失败")
+                return False
+
+            # 搜索目标聊天对象
+            if not self.search_group(target_group):
+                logger.error(f"搜索聊天对象失败：{target_group}")
+                return False
+
+            # 确保微信窗口处于前台
+            if not self.activate_application():
+                return False
+
+            # 将文件复制到剪贴板
+            from file_copy import copy_file_to_clipboard
+            copy_file_to_clipboard(file_path)
+            time.sleep(0.3)
+
+            # 粘贴文件
+            pyautogui.hotkey('ctrl', 'v')
+            time.sleep(1)
+
+            # 发送文件（Alt+S）
+            pyautogui.hotkey('alt', 's')
+            time.sleep(1)
+
+            logger.info(f"个人微信文件发送成功！目标：{target_group}")
+            return True
+
+        except Exception as e:
+            logger.error(f"个人微信自动发送文件失败：{e}")
+            return False
+        finally:
+            self.cleanup()
+
     def get_debug_info(self) -> Dict[str, Any]:
         """获取调试信息"""
         try:
