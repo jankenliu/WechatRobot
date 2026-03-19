@@ -32,7 +32,7 @@ class WeChatSenderV3(MessageSenderInterface):
         super().__init__(config)
 
         # 设置pyautogui安全配置
-        pyautogui.FAILSAFE = True
+        pyautogui.FAILSAFE = False  # 禁用fail-safe，防止鼠标移动到角落时触发异常
         pyautogui.PAUSE = 0.5
 
         # 微信进程和窗口信息
