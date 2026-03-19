@@ -55,6 +55,12 @@ curl -X POST http://localhost:9999/wxSend \
   -d '{"target":"文件传输助手","content":"你好"}'
 ```
 
+成功时响应：
+
+```json
+{"status": "success","message": "消息发送成功"}
+```
+
 **发送文件消息(本地文件路径)：**
 ```bash
 curl -X POST http://localhost:9999/wxSend \
@@ -67,6 +73,12 @@ curl -X POST http://localhost:9999/wxSend \
 curl -X POST http://localhost:9999/wxSend \
   -H "Content-Type: application/json" \
   -d '{"target":"文件传输助手","file":"https://xxx.png"}'
+```
+
+成功时响应：
+
+```json
+{"status": "success","message": "文件发送成功"}
 ```
 
 **自定义端口启动：**
