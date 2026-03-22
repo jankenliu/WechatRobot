@@ -5,10 +5,14 @@
 
 import sys
 
+# 版本号
+VERSION = "1.0.3"
+
 def main():
     """主函数"""
     print("=" * 60)
     print("微信 Hook HTTP 服务器")
+    print(f"版本: v{VERSION}")
     print("=" * 60)
     
     # 默认配置

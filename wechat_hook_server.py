@@ -204,7 +204,6 @@ class WeChatHookHandler(BaseHTTPRequestHandler):
                 
                 result = {
                     "service": "WeChat Test API",
-                    "version": "1.0.0",
                     "tests": []
                 }
                 

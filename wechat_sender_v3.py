@@ -17,11 +17,16 @@ import pyperclip
 import win32con
 import win32gui
 import win32process
+import win32ts
 
 from message_sender_interface import MessageSenderInterface, MessageSenderFactory
 
 # 配置日志
 logger = logging.getLogger(__name__)
+
+# 设置 pyautogui 全局配置（必须在任何 pyautogui 操作之前设置）
+pyautogui.FAILSAFE = False  # 禁用 fail-safe，防止鼠标移动到角落时触发异常
+# pyautogui.PAUSE = 0.1  # 每次操作后的默认暂停时间（秒）
 
 
 class WeChatSenderV3(MessageSenderInterface):
@@ -30,10 +35,6 @@ class WeChatSenderV3(MessageSenderInterface):
     def __init__(self, config: Dict[str, Any] = None):
         """初始化个人微信发送器"""
         super().__init__(config)
-
-        # 设置pyautogui安全配置
-        pyautogui.FAILSAFE = False  # 禁用fail-safe，防止鼠标移动到角落时触发异常
-        pyautogui.PAUSE = 0.5
 
         # 微信进程和窗口信息
         self.wechat_process = None
@@ -150,23 +151,89 @@ class WeChatSenderV3(MessageSenderInterface):
                 'pid': window_pid
             })
 
+    def _check_session_active(self) -> bool:
+        """
+        检查当前 Windows 会话是否处于活动状态（有交互式桌面）
+        远程桌面断开后，会话会进入断开连接状态，此时无法进行 GUI 操作
+        """
+        try:
+            # 获取当前进程的会话 ID
+            current_session_id = win32ts.ProcessIdToSessionId(win32process.GetCurrentProcessId())
+            
+            # 枚举所有会话，检查当前会话状态
+            sessions = win32ts.WTSEnumerateSessions(win32ts.WTS_CURRENT_SERVER_HANDLE)
+            for session in sessions:
+                if session['SessionId'] == current_session_id:
+                    # WTSActive = 0 表示活动状态
+                    # WTSDisconnected = 4 表示断开连接状态
+                    state = session['State']
+                    if state == win32ts.WTSActive:
+                        return True
+                    elif state == win32ts.WTSDisconnected:
+                        logger.warning("检测到远程桌面已断开连接，GUI 操作将无法正常执行")
+                        return False
+                    else:
+                        logger.warning(f"会话状态异常: {state}")
+                        return False
+            return True
+        except Exception as e:
+            logger.warning(f"检查会话状态失败: {e}，继续尝试执行")
+            return True  # 检查失败时继续尝试
+
     def activate_application(self) -> bool:
-        """激活个人微信窗口"""
+        """激活个人微信窗口（使用三层降级策略）"""
         try:
             if not self.main_window_hwnd:
                 logger.error("个人微信窗口句柄不存在")
                 return False
 
-            # 检查窗口是否最小化
+            # 检查会话是否活动（远程桌面是否已断开）
+            if not self._check_session_active():
+                logger.error("远程桌面已断开，无法激活窗口。请重新连接远程桌面后再试。")
+                return False
+
+            # 检查窗口是否最小化，如果是则恢复
             if win32gui.IsIconic(self.main_window_hwnd):
                 win32gui.ShowWindow(self.main_window_hwnd, win32con.SW_RESTORE)
+                time.sleep(0.1)
 
-            # 激活窗口
-            win32gui.SetForegroundWindow(self.main_window_hwnd)
+            # 关键：模拟用户输入使当前进程获得前台权限
+            # Windows 只允许前台进程调用 SetForegroundWindow
+            pyautogui.press('alt')
             time.sleep(0.1)
 
-            logger.info("个人微信窗口已激活")
-            return True
+            # 第一层：尝试 SetForegroundWindow
+            try:
+                win32gui.SetForegroundWindow(self.main_window_hwnd)
+                time.sleep(0.1)
+                logger.info("个人微信窗口已激活 (SetForegroundWindow)")
+                return True
+            except Exception as e1:
+                logger.warning(f"SetForegroundWindow 失败: {e1}，尝试第二层...")
+
+            # 第二层：尝试 BringWindowToTop
+            try:
+                win32gui.BringWindowToTop(self.main_window_hwnd)
+                time.sleep(0.1)
+                # 再次尝试 SetForegroundWindow
+                win32gui.SetForegroundWindow(self.main_window_hwnd)
+                time.sleep(0.1)
+                logger.info("个人微信窗口已激活 (BringWindowToTop + SetForegroundWindow)")
+                return True
+            except Exception as e2:
+                logger.warning(f"BringWindowToTop 失败: {e2}，尝试第三层...")
+
+            # 第三层：使用 ShowWindow 强制激活
+            try:
+                win32gui.ShowWindow(self.main_window_hwnd, win32con.SW_SHOW)
+                time.sleep(0.1)
+                win32gui.SetForegroundWindow(self.main_window_hwnd)
+                time.sleep(0.1)
+                logger.info("个人微信窗口已激活 (ShowWindow + SetForegroundWindow)")
+                return True
+            except Exception as e3:
+                logger.error(f"所有窗口激活方法均失败: {e3}")
+                return False
 
         except Exception as e:
             logger.error(f"激活个人微信窗口失败: {e}")
